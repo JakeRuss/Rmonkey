@@ -69,19 +69,27 @@ survey_responses <- function(survey,
       }
     }
   }
+  df <-  df[colSums(!is.na(df)) > 0] # remove empty columns, if there are no subquestions
+  sq <-  sq[colSums(!is.na(sq)) > 0] # remove empty columns, if there are no subquestions and/or question weights
+  if(!"subquestion_text" %in% names(sq)){ sq$subquestion_text <- as.character(NA)} # need this col if it just got dropped
+  join_cols <- c("survey_id", "question_id", "subquestion_id", "answerchoice_id")
+  join_cols <- join_cols[join_cols %in% names(df)] # remove subquestion_id if that variable got dropped for being NA in both data.frames
   
   # join responses to question data
-  df <- dplyr::left_join(df, sq, by = c("survey_id", "question_id", "subquestion_id", "answerchoice_id")) %>%
-    dplyr::mutate(subquestion_id = dplyr::if_else(question_type == "multiple_choice", # give MC questions unique values for sub_q ID - they need their own columns, matches clean_sm_names()
-                                    answerchoice_id,
-                                    subquestion_id)) 
+  df <- dplyr::left_join(df, sq, by = join_cols)
+  
+  if(subquestion_id %in% join_cols){ # can't run this - and don't need to - if there are no subquestion_ids
+    df$subquestion_id = dplyr::if_else(df$question_type == "multiple_choice", # give MC questions unique values for sub_q ID - they need their own columns, matches clean_sm_names()
+                                       df$answerchoice_id,
+                                       df$subquestion_id)
+  }
   
   # join responses to question IDs
   q_ids <- clean_sm_labels(survey)
-  df <- dplyr::left_join(df,
-                         q_ids %>% dplyr::select(question_id, subquestion_id, master_id, appearance_order),
-                         by = c("question_id", "subquestion_id"))
-  
+  df <- suppressMessages( # it will join by question_id and subquestion_id if both present, otherwise just question_id - but I don't want the message to print
+    dplyr::left_join(df,
+                     q_ids %>% dplyr::select(-main_q_id, -sub_q_id))
+  )
   # Combine the two question headers to make a single one
   df$question_text_full <-
     ifelse (
@@ -106,11 +114,12 @@ survey_responses <- function(survey,
       dplyr::mutate(question_text_full = factor(question_text_full, unique(question_text_full))) %>% # relevel after sorting to match apperance order
     dplyr::select(response_id, survey_id, collector_id, recipient_id, question_text_full, answerchoice_text, master_id)
 
-  if (tolower(response_format) == 'column') {return(df)} else {
-    
+  if (tolower(response_format) == 'column') {
+    return(df)
+  } else {
     # remove any duplicate rows (need to change questiontext to quesiton ID to avoid this)
     df <- df[!duplicated(df),] %>%
-      dplyr::filter((is.na(question_text_full) + is.na(answerchoice_text)) <2)
+      dplyr::filter((is.na(question_text_full) + is.na(answerchoice_text)) < 2)
     
     var_names_crosswalk <- df %>% dplyr::distinct(question_text_full, master_id)
     # Spread from column to tablular form
@@ -140,12 +149,20 @@ survey_responses <- function(survey,
 
 clean_sm_labels <- function(survey){
   survey_qs <- survey_questions(survey)
-  uniques <- survey_qs %>%
+  if(sum(!is.na(survey_qs$subquestion_id)) == 0){ survey_qs$subquestion_id <- NULL } # remove empty column, if there are no subquestions.  Keep other empty cols.
+  uniques <- survey_qs
+  
+  if("subquestion_id" %in% names(survey_qs)){
+    uniques <- uniques %>%
     dplyr::mutate(subquestion_id = dplyr::if_else(question_type == "multiple_choice", # give MC questions unique values for sub_q ID - they need their own columns
                                     answerchoice_id,
                                     subquestion_id)) %>%
-    dplyr::distinct(question_id, subquestion_id)
-  
+      dplyr::distinct(question_id, subquestion_id)
+  } else { # if there are no multiple choice Qs and thus no subquestion IDs
+    uniques <- uniques %>%
+      dplyr::distinct(question_id) %>%
+      mutate(subquestion_id = as.character(NA))
+  }
   processed <- uniques %>%
     dplyr::mutate(main_q_id = as.numeric(forcats::fct_inorder(question_id))) %>%
     dplyr::group_by(question_id) %>%
@@ -159,6 +176,9 @@ clean_sm_labels <- function(survey){
     dplyr::arrange(main_q_id, sub_q_id) %>%
     dplyr::mutate(appearance_order = 1:nrow(.))
   
+  if(sum(!is.na(processed$subquestion_id)) == 0){
+    processed$subquestion_id <- NULL # remove if empty, so it joins correctly later
+  }
   processed
   
 }
