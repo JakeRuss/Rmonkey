@@ -35,4 +35,3 @@ responses (from \code{\link{getresponses}}) to the original question wordings.
 SurveyMonkey API V3 at \url{https://developer.surveymonkey.com/api/v3/#surveys}
 }
 \keyword{}
-

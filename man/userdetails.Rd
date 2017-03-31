@@ -23,4 +23,3 @@ as a "Hello World" after \code{smlogin}
 \references{
 SurveyMonkey API V3 at \url{https://developer.surveymonkey.com/api/v3/#users-me}
 }
-

@@ -29,4 +29,3 @@ secret code and conducts the oauth2 authentication process to return
 an oauth token.  The client_id and secret values can be obtained from the settings
 section of the appropriate SurveyMonkey apps page at https://developer.surveymonkey.com/apps/
 }
-
