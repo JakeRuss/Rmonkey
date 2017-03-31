@@ -21,7 +21,7 @@ Rmonkey provides access to Survey Monkey, for the complete integration of survey
 
 Rmonkey is available on GitHub:
 
-```{r}
+```{r, eval = FALSE}
     if (packageVersion("devtools") < 1.6) {
       install.packages("devtools")
     }
@@ -45,7 +45,7 @@ options(sm_oauth_token = "yourtoken")
 
 First get a list of surveys in your account and fetch the one you want by name:
 ```{r, eval = FALSE}
-s <- survey_list(per_page = 200) # might need to increase to get the one you're looking for if your survey is really old and you give a lot of surveys
+s <- survey_list(per_page = 200) # increase the per_page if your survey is really old and you give a lot of surveys
 test_survey <- find_survey_by_name("testing rmonkey", s)
 ```
 

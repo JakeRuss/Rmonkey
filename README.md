@@ -11,15 +11,6 @@ Rmonkey is available on GitHub:
       install.packages("devtools")
     }
     devtools::install_github("sfirke/Rmonkey")
-#> Downloading GitHub repo sfirke/Rmonkey@master
-#> from URL https://api.github.com/repos/sfirke/Rmonkey/zipball/master
-#> Installing Rmonkey
-#> "C:/PROGRA~1/R/R-33~1.2/bin/x64/R" --no-site-file --no-environ --no-save  \
-#>   --no-restore --quiet CMD INSTALL  \
-#>   "C:/Users/SFirke/AppData/Local/Temp/RtmpOQxnjd/devtools37852006c92/sfirke-Rmonkey-85d1c88"  \
-#>   --library="C:/Users/SFirke/Documents/R/win-library/3.3"  \
-#>   --install-tests
-#> 
 ```
 
 Setup
@@ -42,7 +33,7 @@ Using Rmonkey
 First get a list of surveys in your account and fetch the one you want by name:
 
 ``` r
-s <- survey_list(per_page = 200) # might need to increase to get the one you're looking for if your survey is really old and you give a lot of surveys
+s <- survey_list(per_page = 200) # increase the per_page if your survey is really old and you give a lot of surveys
 test_survey <- find_survey_by_name("testing rmonkey", s)
 ```
 
