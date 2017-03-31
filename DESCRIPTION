@@ -23,7 +23,8 @@ Imports:
 Depends:
     dplyr,
     forcats,
-    Hmisc
+    Hmisc,
+    tidyr
 Description: Programmatic access to the Survey Monkey API <https://
     developer.surveymonkey.com/>, which currently provides extensive functionality
     for monitoring surveys and retrieving survey results and some functionality for
