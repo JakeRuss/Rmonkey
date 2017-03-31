@@ -1,6 +1,6 @@
 Package: Rmonkey
 Version: 0.5
-Date: 2016-12-28
+Date: 2017-03-30
 Title: A Survey Monkey R Client
 Authors@R: c(person("Thomas J.", "Leeper", role = c("aut", "cre"),
                     email = "thosjleeper@gmail.com"),
@@ -10,15 +10,20 @@ Authors@R: c(person("Thomas J.", "Leeper", role = c("aut", "cre"),
                     email = "klittle@iecodesign.com"),
              person("David", "Robinson", role = "ctb", 
                     email = "drobinson@stackoverflow.com"),
-             person("Stephan", "Renatus", role = "ctb"))
+             person("Stephan", "Renatus", role = "ctb"),
+             person("Sam", "Firke", role = "ctb", 
+                    email = "samuel.firke@gmail.com"))
 Maintainer: Thomas J. Leeper <thosjleeper@gmail.com>
 Imports:
     stats,
     utils,
     httr,
     jsonlite,
-    curl,
-    plyr
+    curl
+Depends:
+    dplyr,
+    forcats,
+    Hmisc
 Description: Programmatic access to the Survey Monkey API <https://
     developer.surveymonkey.com/>, which currently provides extensive functionality
     for monitoring surveys and retrieving survey results and some functionality for
@@ -26,5 +31,4 @@ Description: Programmatic access to the Survey Monkey API <https://
 License: GPL-2
 URL: https://github.com/cloudyr/Rmonkey
 BugReports: https://github.com/cloudyr/Rmonkey/issues
-RoxygenNote: 5.0.1
-
+RoxygenNote: 6.0.1
