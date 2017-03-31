@@ -71,7 +71,7 @@ survey_responses <- function(survey,
   }
   
   # join responses to question data
-  df <- dplyr::left_join(df, sq, by = c("survey_id", "question_id", "subquestion_id", "answerchoice_id"))  %>%
+  df <- dplyr::left_join(df, sq, by = c("survey_id", "question_id", "subquestion_id", "answerchoice_id")) %>%
     dplyr::mutate(subquestion_id = dplyr::if_else(question_type == "multiple_choice", # give MC questions unique values for sub_q ID - they need their own columns, matches clean_sm_names()
                                     answerchoice_id,
                                     subquestion_id)) 
@@ -79,7 +79,8 @@ survey_responses <- function(survey,
   # join responses to question IDs
   q_ids <- clean_sm_labels(survey)
   df <- dplyr::left_join(df,
-                         q_ids %>% dplyr::select(question_id, subquestion_id, master_id, appearance_order))
+                         q_ids %>% dplyr::select(question_id, subquestion_id, master_id, appearance_order),
+                         by = c("question_id", "subquestion_id"))
   
   # Combine the two question headers to make a single one
   df$question_text_full <-
@@ -138,12 +139,12 @@ survey_responses <- function(survey,
 #' @export
 
 clean_sm_labels <- function(survey){
-  sq <- surveyquestions(survey)
-  uniques <- sq %>%
+  survey_qs <- survey_questions(survey)
+  uniques <- survey_qs %>%
     dplyr::mutate(subquestion_id = dplyr::if_else(question_type == "multiple_choice", # give MC questions unique values for sub_q ID - they need their own columns
                                     answerchoice_id,
                                     subquestion_id)) %>%
-    distinct(question_id, subquestion_id)
+    dplyr::distinct(question_id, subquestion_id)
   
   processed <- uniques %>%
     dplyr::mutate(main_q_id = as.numeric(forcats::fct_inorder(question_id))) %>%
