@@ -3,3 +3,7 @@ inst/figure
 README.Rmd
 README.html
 drat.sh
+^.*\.Rproj$
+^\.Rproj\.user$
+^README\.Rmd$
+^README-.*\.png$
