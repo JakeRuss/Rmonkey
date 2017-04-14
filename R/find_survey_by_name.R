@@ -17,6 +17,7 @@
 find_survey_by_name <- function(s_title, survey_list){
   titles <- unlist(
     lapply(survey_list, function(x) x$title)
-  )
-  survey_list[[which(titles == s_title)]]
+  ) %>%
+    gsub("[^[:alnum:]]", "", .)
+  survey_list[[which(titles == gsub("[^[:alnum:]]", "", s_title))]]
 }
