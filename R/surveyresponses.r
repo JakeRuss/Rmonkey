@@ -13,10 +13,10 @@ survey_responses <- function(survey,
   
   if (missing(response_format)) {response_format = 'table'}
   
-  df <- data.frame()
   sr <- get_responses(survey, bulk = TRUE, all_page = TRUE, per_page = 100)
   sq <- survey_questions(survey)
   survey_id <- survey$id
+  df <- data.frame()
   
   # Iterate through responses
   for (h in sr) {
@@ -78,7 +78,7 @@ survey_responses <- function(survey,
   # join responses to question data
   df <- dplyr::left_join(df, sq, by = join_cols)
   
-  if(subquestion_id %in% join_cols){ # can't run this - and don't need to - if there are no subquestion_ids
+  if("subquestion_id" %in% join_cols){ # can't run this - and don't need to - if there are no subquestion_ids
     df$subquestion_id = dplyr::if_else(df$question_type == "multiple_choice", # give MC questions unique values for sub_q ID - they need their own columns, matches clean_sm_names()
                                        df$answerchoice_id,
                                        df$subquestion_id)
