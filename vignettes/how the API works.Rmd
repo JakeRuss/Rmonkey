@@ -1,0 +1,81 @@
+---
+title: "Vignette Title"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## How the API works
+
+This is for contributors to the package, to understand how the backend works.  Ideally users should not have to interact with this.
+
+You'll need a token.
+
+### Example
+
+```{r}
+s <- survey_list(per_page = 80) # might need to increase this if your survey is really old 
+
+# See titles of recent surveys, to pick the one you want
+lapply(s, function(x) x$title) %>% unlist
+
+# Get a survey by name
+
+survey <- find_survey_by_name("<your survey's name>" , s) # returns sm_survey object
+
+responses <- get_responses(survey, bulk = TRUE, all_page = TRUE, per_page = 100) # a list of responses
+single_r <- responses[[2]] # a single respondent
+pages <- single_r$pages
+single_page <- pages[[3]]
+qs <- single_page$questions
+single_q <- qs[[1]]
+answers <- single_q$answers
+single_a <- answers[[1]]
+glimpse(single_a) # can have values for col_id, row_id, choice_id, other_id, and text
+
+```
+
+```{r}
+library(purrr)
+process_single_answer <- function(answer){
+  dplyr::bind_rows(answer)
+}
+
+process_answers <- function(question){
+  purrr::map_df(question$answers, process_single_answer) %>%
+    dplyr::mutate(question_id = question$id)
+}
+
+process_page <- function(page){
+  purrr::map_df(page$questions, process_answers)
+}
+
+process_response <- function(response){
+  purrr::map_df(response$pages, process_page) %>%
+    mutate(response_id = response$id,
+           collector_id = response$collector_id,
+           survey_id = response$survey_id,
+           recipient_id = response$recipient_id)
+}
+
+process_respondent_list <- function(respondents){
+  purrr::map_df(respondents, process_response) %>%
+    rename(answerchoice_id = other_id,
+           answertext = text,
+           subquestion_id = row_id) %>%
+    mutate(choice_id = dplyr::coalesce(choice_id, answerchoice_id),
+           survey_id = ) %>% # when answerchoice_id is not NA, choice_id is NA
+    select(-answerchoice_id) %>%
+    select(survey_id, collector_id, recipient_id, response_id, everything())
+}
+
+
+ans <- process_respondent_list(responses)
+
+```
+
+
