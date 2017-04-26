@@ -26,8 +26,9 @@ lapply(s, function(x) x$title) %>% unlist
 # Get a survey by name
 
 survey <- find_survey_by_name("RMonkey test" , s) # returns sm_survey object
-
+sd <- survey_details(survey)
 responses <- get_responses(survey, bulk = TRUE, all_page = TRUE, per_page = 100) # a list of responses
+
 single_r <- responses[[2]] # a single respondent
 pages <- single_r$pages
 single_page <- pages[[3]]

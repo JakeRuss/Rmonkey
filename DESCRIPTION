@@ -24,7 +24,8 @@ Depends:
     dplyr,
     forcats,
     Hmisc,
-    tidyr
+    tidyr,
+    purrr
 Description: Programmatic access to the Survey Monkey API <https://
     developer.surveymonkey.com/>, which currently provides extensive functionality
     for monitoring surveys and retrieving survey results and some functionality for
@@ -33,3 +34,6 @@ License: GPL-2
 URL: https://github.com/cloudyr/Rmonkey
 BugReports: https://github.com/cloudyr/Rmonkey/issues
 RoxygenNote: 6.0.1
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
