@@ -1,4 +1,4 @@
-#' surveydetails
+#' survey_details
 #' 
 #' Get detailed information about a survey
 #' 
@@ -18,7 +18,7 @@
 #' 
 #' @return A list of objects of class \code{sm_survey}.
 #' @references SurveyMonkey API V3 at \url{https://developer.surveymonkey.com/api/v3/#surveys}
-#' @export surveydetails
+#' @export survey_details
 #' @export print.sm_survey
 #' @export surveyquestions
 #' @export surveypreview
@@ -89,7 +89,7 @@
 # $collect_url : chr = web browsable url to collect responses
 # $edit_url : chr = web browsable url to edit the survey
 
-surveydetails <- function(
+survey_details <- function(
     survey,
     question_details = TRUE,
     oauth_token = getOption('sm_oauth_token'),
@@ -116,7 +116,7 @@ surveydetails <- function(
 }
 
 surveyquestions <- function(survey){
-    d <- surveydetails(survey, oauth_token = getOption('sm_oauth_token'), question_details = TRUE)
+    d <- survey_details(survey, oauth_token = getOption('sm_oauth_token'), question_details = TRUE)
     questions <- unlist(unlist(lapply(d$pages, `[`, "questions"), recursive = FALSE), recursive = FALSE)
     n <- unname(unlist(lapply(questions, `[`, "id")))
     w <- unname(unlist(lapply(questions, `[`, "headings")))
@@ -125,7 +125,7 @@ surveyquestions <- function(survey){
 }
 
 surveypreview <- function(survey) {
-    d <- surveydetails(survey, oauth_token = getOption('sm_oauth_token'))
+    d <- survey_details(survey, oauth_token = getOption('sm_oauth_token'))
     browseURL(d$preview)
 }
 

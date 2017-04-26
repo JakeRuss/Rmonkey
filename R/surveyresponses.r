@@ -15,73 +15,23 @@ survey_responses <- function(survey,
   
   sr <- get_responses(survey, bulk = TRUE, all_page = TRUE, per_page = 100)
   sq <- survey_questions(survey)
-  survey_id <- survey$id
-  df <- data.frame()
+  resp <- parse_respondent_list(sr)
+  sc <- survey_choices(survey)
   
-  # Iterate through responses
-  for (h in sr) {
-    response_id <- h$id
-    recipient_id <- h$recipient_id
-    collector_id <- h$collector_id
-    questions <-
-      do.call('c', lapply(h$pages, function(x)
-        x[['questions']]))
-    for (i in questions) {
-      question_id <- i$id
-      j <- 0
-      # use a repeat loop to account for cases where there are no answer rows
-      repeat {
-        j <- j + 1     # increment counter first for array indexing
-        answertext <- NA
-        if (is.null(i$answers[[j]]$row_id)) {
-          subquestion_id <- NA
-        } else {
-          subquestion_id <- i$answers[[j]]$row_id
-        }
-        if (is.null(i$answers[[j]]$choice_id)) {
-          if (is.null(i$answers[[j]]$other_id)) {
-            answerchoice_id <- NA
-            answertext <- i$answers[[j]]$text
-          } else {
-            answerchoice_id <-i$answers[[j]]$other_id
-            answertext <- i$answers[[j]]$text
-          }
-        } else {
-          answerchoice_id <- i$answers[[j]]$choice_id
-        }
-        newrow <-
-          data.frame(
-            response_id,
-            survey_id,
-            recipient_id,
-            collector_id,
-            question_id,
-            subquestion_id,
-            answerchoice_id,
-            answertext,
-            stringsAsFactors = FALSE,
-            check.rows = FALSE
-          )
-        df <- dplyr::bind_rows(df, newrow)
-        if (j >= length(i$answers)) {
-          break
-        }
-      }
-    }
-  }
-  df <-  df[colSums(!is.na(df)) > 0] # remove empty columns, if there are no subquestions
-  sq <-  sq[colSums(!is.na(sq)) > 0] # remove empty columns, if there are no subquestions and/or question weights
-  if(!"subquestion_text" %in% names(sq)){ sq$subquestion_text <- as.character(NA)} # need this col if it just got dropped
-  join_cols <- c("survey_id", "question_id", "subquestion_id", "answerchoice_id")
-  join_cols <- join_cols[join_cols %in% names(df)] # remove subquestion_id if that variable got dropped for being NA in both data.frames
+  resp_full <- left_join(resp, sc, by = c("survey_id", "choice_id", "question_id"))
+  
+  join_cols <- c("survey_id", "question_id", "subquestion_id")
+  join_cols <- join_cols[join_cols %in% names(resp)] # remove subquestion_id if that variable got dropped for being NA in both data.frames
   
   # join responses to question data
   df <- dplyr::left_join(df, sq, by = join_cols)
   
+  #### PICK UP HERE.  NEED TO JOIN ALL THREE SOURCES TOGETHER SO THAT Q TYPE CAN INFORM RESPONSES
+  
   if("subquestion_id" %in% join_cols){ # can't run this - and don't need to - if there are no subquestion_ids
-    df$subquestion_id = dplyr::if_else(df$question_type == "multiple_choice", # give MC questions unique values for sub_q ID - they need their own columns, matches clean_sm_names()
-                                       df$answerchoice_id,
-                                       df$subquestion_id)
+    resp_full$q_unique_id <- dplyr::if_else(resp_full$sq$question_type == "multiple_choice", # give MC questions unique values for sub_q ID - they need their own columns, matches clean_sm_names()
+                                    sq$answerchoice_id,
+                                    sq$subquestion_id)
   }
   
   # join responses to question IDs
@@ -182,8 +132,3 @@ clean_sm_labels <- function(survey){
   processed
   
 }
-
-  # Future work
-  #
-  
-  # do.call(rbind, lapply(i$answers, function(x) data.frame(answerchoice_id = x$choice_id, subquestion_id = x$row_id, stringsAsFactors = FALSE)))
